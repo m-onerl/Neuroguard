@@ -4,6 +4,7 @@ import torch.optim as optim
 import numpy as np
 import logging
 
+from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader, TensorDataset
 
 logger = logging.getLogger(__name__)
@@ -32,8 +33,10 @@ def train():
     x_raw = np.load('./data/processed/X_train.npy')
     y_raw = np.load('./data/processed/y_train.npy')
 
+    scaler = StandardScaler()
+    x_normalized = scaler.fit_transform(x_raw)
 
-    X_tensor = torch.from_numpy(x_raw).float()
+    X_tensor = torch.from_numpy(x_normalized).float()
     y_tensor = torch.from_numpy(y_raw).float().reshape(-1, 1)
     
     dataset = TensorDataset(X_tensor, y_tensor)
@@ -57,7 +60,7 @@ def train():
             optimizer.step()
             running_loss += loss.item()
             
-            logger.info(f'Epoch {epoch+1}/{epochs} Average of loss {running_loss/len(train_loader)}')
+        logger.info(f'Epoch {epoch+1}/{epochs} Average of loss {running_loss/len(train_loader)}')
             
 if __name__ == "__main__":
     train()
