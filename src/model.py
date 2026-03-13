@@ -29,7 +29,6 @@ class NeuroGuard(nn.Module):
     
 def train():
     
-        
     x_raw = np.load('./data/processed/X_train.npy')
     y_raw = np.load('./data/processed/y_train.npy')
 
