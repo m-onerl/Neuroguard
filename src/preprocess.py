@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
+import os 
 
+path = os.path.join('/home/monerl/Projekty/Neuroguard', 'data')
 
 columns = [
     "duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes", 
@@ -15,7 +17,7 @@ columns = [
     "dst_host_rerror_rate", "dst_host_srv_rerror_rate", "label", "difficulty_level"
 ]
 
-df = pd.read_csv('../data/KDDTrain+.txt', names = columns, header = None)
+df = pd.read_csv(path + '/KDDTrain+.txt', names = columns, header = None)
 
 df['label'].where(df['label'] == 'normal', inplace = True)
 df['label'].fillna(value = 1, inplace = True)
@@ -31,7 +33,7 @@ y = df['label']
 x_array = x.astype(np.float32).values
 y_array = y.astype(np.float32).values
 
-processed_dir = '../data/processed'
+processed_dir = path + '/processed'
 
 np.save(f'{processed_dir}/X_train.npy', x_array)
 np.save(f'{processed_dir}/y_train.npy', y_array)
