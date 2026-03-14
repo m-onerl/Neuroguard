@@ -1,16 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import numpy as np
-import logging
-
-from train import train
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level = logging.INFO,
-    format = '%(asctime)s %(name)s = %(levelname)s - %(message)s'
-)
 
 
 class NeuroGuard(nn.Module):
@@ -25,7 +14,3 @@ class NeuroGuard(nn.Module):
         x = torch.relu(self.layer1(x))
         x = torch.relu(self.layer2(x))
         return self.sigmoid(self.out(x))
-  
-            
-if __name__ == "__main__":
-    train()
