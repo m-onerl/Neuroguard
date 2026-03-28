@@ -6,6 +6,7 @@ import logging
 
 from pathlib import Path
 from model import NeuroGuard
+from preprocess import DataPreprocesor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
@@ -46,10 +47,17 @@ class Training:
         y_path = self.data_dir / "y_train.npy"
 
         if not x_path.exists() or not y_path.exists():
+            logger.info("We dont have files for training model x/y paths. Starting preprocessing")
+            try:
+                DataPreprocesor.preprocesor('KDDTrain+.txt', 'processed')
+            except Exception as e:
+                raise FileNotFoundError(f"Missing preprocessed data. Expected files: {x_path} and {y_path}")
+        
+        if not x_path.exists() or not y_path.exists():
             raise FileNotFoundError(
-                f"Missing preprocessed data. Expected files: {x_path} and {y_path}"
+                f"Failed with generating data, looking for files {x_path}/{y_path}"
             )
-
+        
         x_raw = np.load(x_path)
         y_raw = np.load(y_path)
         return x_raw, y_raw
