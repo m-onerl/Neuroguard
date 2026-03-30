@@ -1,5 +1,5 @@
 import tkinter as tk
-from preprocess import DataPreprocesor
+from ..preprocess import DataPreprocesor
 
 class GUINeuroguard(tk.Tk):
     def __init__(self):
