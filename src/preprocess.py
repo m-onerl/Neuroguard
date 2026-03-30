@@ -22,8 +22,8 @@ class DataPreprocesor:
        
         df = pd.read_csv(path + file_path, names = columns, header = None)
 
-        df['label'].where(df['label'] == 'normal', inplace = True)
-        df['label'].fillna(value = 1, inplace = True)
+        df['label'] = df['label'].where(df['label'] == 'normal',)
+        df['label'] = df['label'].fillna(value = 1)
         df.loc[df['label'] == 'normal', 'label' ] = 0
 
         df = pd.get_dummies(df, columns = ['protocol_type', 'service', 'flag'])

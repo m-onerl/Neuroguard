@@ -17,32 +17,33 @@ class GUINeuroguard(tk.Tk):
         self.geometry("600x400")     
         self.label = tk.Label(self, text = 'NEUROGUARD')
         self.label.pack(pady=20)
-        self.button = tk.Button
 
-        self.preprocess = self.button(
+        self.preprocess = tk.Button(
             self, 
             text = 'Preproces Data', 
             width = 25, 
-            command = self.preprocess_data()
+            command = self.preprocess_data
         )
-        self.button.pack(pady=10)
+        self.preprocess.pack(pady=10)
         
-        self.train = self.button(
+        self.train = tk.Button(
             self, 
             text = 'Train model', 
             width = 25, 
-            command = self.train_model()
+            command = self.train_model
         )
-        self.button.pack(pady=20)
+        self.train.pack(pady=20)
 
         
     def preprocess_data(self):
+        logging.info("Starting data processing...")
         try:
             DataPreprocesor.preprocesor('KDDTrain+.txt', 'processed')
         except Exception as e:
             logging.error(f'Error: {e}')
         
     def train_model(self):
+        logging.info("Starting train of model...")
         try:
             trainer = Training()
             trainer.train()
