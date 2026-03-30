@@ -17,8 +17,9 @@ class GUINeuroguard(tk.Tk):
         self.geometry("600x400")     
         self.label = tk.Label(self, text = 'NEUROGUARD')
         self.label.pack(pady=20)
-        
-        self.button = tk.Button(
+        self.button = tk.Button
+
+        self.preprocess = self.button(
             self, 
             text = 'Preproces Data', 
             width = 25, 
@@ -26,13 +27,14 @@ class GUINeuroguard(tk.Tk):
         )
         self.button.pack(pady=10)
         
-        self.button = tk.Button(
+        self.train = self.button(
             self, 
             text = 'Train model', 
             width = 25, 
             command = self.train_model()
         )
-        self.button.pack(pady=10)
+        self.button.pack(pady=20)
+
         
     def preprocess_data(self):
         try:
@@ -50,6 +52,5 @@ class GUINeuroguard(tk.Tk):
             
             
 if __name__ == "__main__":
-    
     app = GUINeuroguard()
     app.mainloop()
