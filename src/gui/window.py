@@ -1,17 +1,16 @@
 import tkinter as tk
-from ..preprocess import DataPreprocesor
+from src.model.preprocess import DataPreprocesor
 from src.model.train import Training
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
+logging.basicConfig( 
     level = logging.INFO,
     format = '%(asctime)s %(name)s = %(levelname)s - %(message)s'
 )
 
 class GUINeuroguard(tk.Tk):
     def __init__(self):
-        
         super().__init__()
         
         self.title("NeuroGuard")

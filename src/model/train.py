@@ -5,8 +5,8 @@ import numpy as np
 import logging
 
 from pathlib import Path
-from src.model import NeuroGuard
-from src.preprocess import DataPreprocesor
+from .init_model import NeuroGuard
+from .preprocess import DataPreprocesor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
