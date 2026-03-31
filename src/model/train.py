@@ -10,13 +10,15 @@ from .preprocess import DataPreprocesor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    level = logging.INFO,
-    format = '%(asctime)s %(name)s = %(levelname)s - %(message)s'
+    level=logging.INFO,
+    format='%(asctime)s %(name)s = %(levelname)s - %(message)s'
 )
+
+NUM_CLASSES = 5
 
 
 class Training:
@@ -42,22 +44,25 @@ class Training:
         self.scaler = StandardScaler()
         self.model = None
 
+        torch.manual_seed(random_state)
+        np.random.seed(random_state)
+
     def _load_data(self):
         x_path = self.data_dir / "X_train.npy"
         y_path = self.data_dir / "y_train.npy"
 
         if not x_path.exists() or not y_path.exists():
-            logger.info("We dont have files for training model x/y paths. Starting preprocessing")
+            logger.info("Preprocessed files missing. Starting preprocessing...")
             try:
                 DataPreprocesor.preprocesor('KDDTrain+.txt', 'processed')
             except Exception as e:
-                raise FileNotFoundError(f"Missing preprocessed data. Expected files: {x_path} and {y_path}")
-        
+                raise FileNotFoundError(
+                    f"Preprocessing failed: {e}. Expected files: {x_path} and {y_path}"
+                )
+
         if not x_path.exists() or not y_path.exists():
-            raise FileNotFoundError(
-                f"Failed with generating data, looking for files {x_path}/{y_path}"
-            )
-        
+            raise FileNotFoundError(f"Files still missing after preprocessing: {x_path}, {y_path}")
+
         x_raw = np.load(x_path)
         y_raw = np.load(y_path)
         return x_raw, y_raw
@@ -66,8 +71,7 @@ class Training:
         x_raw, y_raw = self._load_data()
 
         x_train, x_val, y_train, y_val = train_test_split(
-            x_raw,
-            y_raw,
+            x_raw, y_raw,
             test_size=self.val_size,
             random_state=self.random_state,
             stratify=y_raw,
@@ -76,16 +80,26 @@ class Training:
         x_train_scaled = self.scaler.fit_transform(x_train)
         x_val_scaled = self.scaler.transform(x_val)
 
+        class_counts = np.bincount(y_train, minlength=NUM_CLASSES)
+
+        class_weights = 1.0 / np.where(class_counts == 0, 1, class_counts)
+        sample_weights = class_weights[y_train]
+        sampler = WeightedRandomSampler(
+            weights=torch.from_numpy(sample_weights).float(),
+            num_samples=len(sample_weights),
+            replacement=True,
+        )
+
         train_dataset = TensorDataset(
             torch.from_numpy(x_train_scaled).float(),
-            torch.from_numpy(y_train).float().reshape(-1, 1),
+            torch.from_numpy(y_train).long(), 
         )
         val_dataset = TensorDataset(
             torch.from_numpy(x_val_scaled).float(),
-            torch.from_numpy(y_val).float().reshape(-1, 1),
+            torch.from_numpy(y_val).long(),
         )
 
-        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
+        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, sampler=sampler)
         val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
 
         return train_loader, val_loader, x_train_scaled.shape[1]
@@ -94,9 +108,9 @@ class Training:
     def _calculate_metrics(y_true, y_pred):
         return {
             "accuracy": accuracy_score(y_true, y_pred),
-            "precision": precision_score(y_true, y_pred, zero_division=0),
-            "recall": recall_score(y_true, y_pred, zero_division=0),
-            "f1": f1_score(y_true, y_pred, zero_division=0),
+            "precision": precision_score(y_true, y_pred, average='macro', zero_division=0),
+            "recall": recall_score(y_true, y_pred, average='macro', zero_division=0),
+            "f1": f1_score(y_true, y_pred, average='macro', zero_division=0),
         }
 
     def _validate(self, val_loader):
@@ -105,20 +119,20 @@ class Training:
         all_targets = []
         running_val_loss = 0.0
 
-        criterion = nn.BCELoss()
+        criterion = nn.CrossEntropyLoss()
 
         with torch.no_grad():
             for batch_x, batch_y in val_loader:
                 batch_x = batch_x.to(self.device)
                 batch_y = batch_y.to(self.device)
 
-                outputs = self.model(batch_x)
+                outputs = self.model(batch_x)     
                 loss = criterion(outputs, batch_y)
                 running_val_loss += loss.item()
 
-                preds = (outputs >= 0.5).float()
-                all_preds.extend(preds.cpu().numpy().flatten())
-                all_targets.extend(batch_y.cpu().numpy().flatten())
+                preds = outputs.argmax(dim=1)    
+                all_preds.extend(preds.cpu().numpy())
+                all_targets.extend(batch_y.cpu().numpy())
 
         metrics = self._calculate_metrics(np.array(all_targets), np.array(all_preds))
         avg_val_loss = running_val_loss / max(len(val_loader), 1)
@@ -127,8 +141,8 @@ class Training:
     def train(self):
         train_loader, val_loader, input_dim = self._prepare_dataloaders()
 
-        self.model = NeuroGuard(input_dim=input_dim).to(self.device)
-        criterion = nn.BCELoss()
+        self.model = NeuroGuard(input_dim=input_dim, num_classes=NUM_CLASSES).to(self.device)
+        criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
         logger.info("Starting training on device: %s", self.device)
@@ -154,14 +168,10 @@ class Training:
 
             logger.info(
                 "Epoch %d/%d | train_loss=%.4f | val_loss=%.4f | acc=%.4f | prec=%.4f | rec=%.4f | f1=%.4f",
-                epoch + 1,
-                self.epochs,
-                avg_train_loss,
-                avg_val_loss,
-                val_metrics["accuracy"],
-                val_metrics["precision"],
-                val_metrics["recall"],
-                val_metrics["f1"],
+                epoch + 1, self.epochs,
+                avg_train_loss, avg_val_loss,
+                val_metrics["accuracy"], val_metrics["precision"],
+                val_metrics["recall"], val_metrics["f1"],
             )
 
         self._save_artifacts()
