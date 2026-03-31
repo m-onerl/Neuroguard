@@ -1,10 +1,10 @@
 import tkinter as tk
-from ..preprocess import DataPreprocesor
-from src.train import Training
+from src.model.preprocess import DataPreprocesor
+from src.model.train import Training
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
+logging.basicConfig( 
     level = logging.INFO,
     format = '%(asctime)s %(name)s = %(levelname)s - %(message)s'
 )
@@ -15,24 +15,21 @@ class GUINeuroguard(tk.Tk):
         
         self.title("NeuroGuard")
         self.geometry("600x400")     
-        self.label = tk.Label(self, text = 'NEUROGUARD')
-        self.label.pack(pady=20)
-
+        self.label = tk.Label(self, text = 'NEUROGUARD').pack(pady = 20)
         self.preprocess = tk.Button(
             self, 
             text = 'Preproces Data', 
             width = 25, 
             command = self.preprocess_data
-        )
-        self.preprocess.pack(pady=10)
-        
+        ).pack(pady = 10)       
+         
         self.train = tk.Button(
             self, 
             text = 'Train model', 
             width = 25, 
             command = self.train_model
-        )
-        self.train.pack(pady=20)
+        ).pack(pady = 10)
+
 
         
     def preprocess_data(self):
