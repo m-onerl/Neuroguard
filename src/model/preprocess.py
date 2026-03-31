@@ -1,6 +1,13 @@
+import os 
 import pandas as pd
 import numpy as np
-import os 
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level = logging.INFO,
+    format = '%(asctime)s %(name)s = %(levelname)s - %(message)s'
+)
 
 columns = [
             "duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes", 
@@ -19,7 +26,7 @@ path = os.path.join('data/')
 class DataPreprocesor:
     @staticmethod
     def preprocesor(file_path, save):
-       
+        logger.info("Preprocesor starting work..")
         df = pd.read_csv(path + file_path, names = columns, header = None)
 
         df['label'] = df['label'].where(df['label'] == 'normal',)
@@ -38,4 +45,5 @@ class DataPreprocesor:
 
         np.save(f'{processed_dir}/X_train.npy', x_array)
         np.save(f'{processed_dir}/y_train.npy', y_array)
+        logger.info(f"Files saved into {processed_dir} ")
 
