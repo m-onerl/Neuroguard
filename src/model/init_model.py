@@ -1,16 +1,28 @@
 import torch
 import torch.nn as nn
+import torch.nn as nn
 
 
 class NeuroGuard(nn.Module):
-    def __init__(self, input_dim):
-        super(NeuroGuard, self).__init__()
-        self.layer1 = nn.Linear(input_dim, 64)
-        self.layer2 = nn.Linear(64, 32)
-        self.out = nn.Linear(32, 1)
-        self.sigmoid = nn.Sigmoid()
-        
-    def forward (self, x):
-        x = torch.relu(self.layer1(x))
-        x = torch.relu(self.layer2(x))
-        return self.sigmoid(self.out(x))
+    def __init__(self, input_dim: int, num_classes: int = 5, dropout: float = 0.3):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Linear(input_dim, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+
+            nn.Linear(256, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+
+            nn.Linear(128, 64),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+
+            nn.Linear(64, num_classes), 
+        )
+
+    def forward(self, x):
+        return self.network(x)
