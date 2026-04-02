@@ -52,15 +52,23 @@ class Predictor:
         self.model.eval() 
         scaler_data = np.load(self.scaler_path)
         self.scaler = StandardScaler()
-        self.scaler.mean = scaler_data['mean']
-        self.scaler.scale = scaler_data['scale']
+        self.scaler.mean_ = scaler_data['mean']
+        self.scaler.scale_ = scaler_data['scale']
 
         logger.info(f"Model and scaler loaded successfully. dimensions={input_dim}, classes={num_classes}")
 
-    def predict(self):
-        if not self.model_path.exists() or not self.scaler_path.exists():
-            raise FileNotFoundError(
-                f"Artifacts not found. You have to train the model first.\n"
-            )
-        
-        pass
+    def predict(self, features: np.ndarray) -> str:
+        features = np.array(features, dtype=np.float32)
+        if features.ndim == 1:
+            features = features.reshape(1, -1)
+
+        features = (features - self.scaler.mean_) / self.scaler.scale_
+
+        tensor = torch.tensor(features, dtype=torch.float32).to(self.device)
+
+        with torch.no_grad():
+            logits = self.model(tensor)
+            predicted_class = torch.argmax(logits, dim=1).item()
+
+        logger.info("Predicted class: %s", CLASS_NAMES[predicted_class])
+        return CLASS_NAMES[predicted_class]
