@@ -55,6 +55,12 @@ class Predictor:
         self.scaler.mean = scaler_data['mean']
         self.scaler.scale = scaler_data['scale']
 
-        logger.info("Model and scaler loaded successfully. input_dim=%d, num_classes=%d",
-                    input_dim, num_classes)
+        logger.info(f"Model and scaler loaded successfully. dimensions={input_dim}, classes={num_classes}")
 
+    def predict(self):
+        if not self.model_path.exists() or not self.scaler_path.exists():
+            raise FileNotFoundError(
+                f"Artifacts not found. You have to train the model first.\n"
+            )
+        
+        pass
