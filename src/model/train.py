@@ -20,7 +20,6 @@ logging.basicConfig(
 
 NUM_CLASSES = 5
 
-
 class Training:
     def __init__(
         self,
@@ -76,7 +75,9 @@ class Training:
             random_state=self.random_state,
             stratify=y_raw,
         )
-
+        y_train = y_train.astype(np.int64)
+        y_val = y_val.astype(np.int64)
+        
         x_train_scaled = self.scaler.fit_transform(x_train)
         x_val_scaled = self.scaler.transform(x_val)
 
@@ -98,7 +99,7 @@ class Training:
             torch.from_numpy(x_val_scaled).float(),
             torch.from_numpy(y_val).long(),
         )
-
+        
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, sampler=sampler)
         val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
 
