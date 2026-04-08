@@ -14,7 +14,9 @@ logging.basicConfig(
 class GUINeuroguard(tk.Tk):
     def __init__(self):
         super().__init__()
-        
+        self.predictor = Predictor()
+        self.trainer = Training()
+        self.preprocess = DataPreprocesor()
         self.title("NeuroGuard")
         self.geometry("600x400")     
         self.label = tk.Label(self, text = 'NEUROGUARD').pack(pady = 20)
@@ -44,23 +46,21 @@ class GUINeuroguard(tk.Tk):
     def preprocess_data(self):
         logging.info("Starting data processing...")
         try:
-            DataPreprocesor.preprocesor('KDDTrain+.txt', 'processed')
+            self.preprocess.preprocesor('KDDTrain+.txt', 'processed')
         except Exception as e:
             logging.error(f'Error: {e}')
         
     def train_model(self):
         logging.info("Starting train of model...")
         try:
-            trainer = Training()
-            trainer.train()
+            self.trainer.train()
         except Exception as e:
             logging.error(f'Error{e}')
             
     def model_predict(self):
         logging.info("Starting predicting ...")
         try:
-            predictor = Predictor()
-            predicted, true = predictor.predict_random_test()
+            predicted, true = self.predictor.predict_random_test()
             self.result_label.config(text=f"Predicted: {predicted} | True: {true}")
         except Exception as e:
             logging.error(f'Error: {e}')

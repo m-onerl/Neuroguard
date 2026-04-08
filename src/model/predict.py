@@ -75,6 +75,7 @@ class Predictor:
 
         logger.info("Predicted class: %s", CLASS_NAMES[predicted_class])
         return CLASS_NAMES[predicted_class]
+    
     def predict_random_test(
         self,
         test_path: str = "./data/KDDTrain+.txt",
