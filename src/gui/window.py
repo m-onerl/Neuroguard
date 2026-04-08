@@ -46,9 +46,3 @@ class GUINeuroguard(tk.Tk):
             trainer.train()
         except Exception as e:
             logging.error(f'Error{e}')
-            
-            
-            
-if __name__ == "__main__":
-    app = GUINeuroguard()
-    app.mainloop()
