@@ -38,8 +38,8 @@ class GUINeuroguard(tk.Tk):
             width = 25, 
             command = self.model_predict
         ).pack(pady = 10)
-
-
+        self.result_label = tk.Label(self, text="Result: -")
+        self.result_label.pack(pady=10)
         
     def preprocess_data(self):
         logging.info("Starting data processing...")
@@ -60,6 +60,7 @@ class GUINeuroguard(tk.Tk):
         logging.info("Starting predicting ...")
         try:
             predictor = Predictor()
-            predictor.predict()
+            predicted, true = predictor.predict_random_test()
+            self.result_label.config(text=f"Predicted: {predicted} | True: {true}")
         except Exception as e:
             logging.error(f'Error: {e}')
