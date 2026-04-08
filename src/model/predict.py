@@ -1,7 +1,10 @@
 import numpy as np
+import pandas as pd   
 import torch
 import logging
 
+   
+from src.model.preprocess import columns, attack_map
 from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 from .init_model import NeuroGuard
@@ -72,3 +75,25 @@ class Predictor:
 
         logger.info("Predicted class: %s", CLASS_NAMES[predicted_class])
         return CLASS_NAMES[predicted_class]
+    
+    def predict_random_test(
+        self,
+        test_path: str = "./data/KDDTrain+.txt",
+        columns_path: str = "./data/processed/columns.npy"
+        ):
+
+        feature_columns = np.load(columns_path, allow_pickle=True).tolist()
+
+        df = pd.read_csv(test_path, names=columns, header=None)
+        row = df.sample(1)
+
+        true_label_str = row['label'].values[0]
+        true_label = attack_map.get(true_label_str, -1)
+        true_name = CLASS_NAMES.get(true_label, f"Unknown ({true_label_str})")
+
+        row = row.drop(columns=['label', 'difficulty_level'])
+        row = pd.get_dummies(row, columns=['protocol_type', 'service', 'flag'])
+        row = row.reindex(columns=feature_columns, fill_value=0) 
+
+        predicted = self.predict(row.values)
+        return predicted, true_name

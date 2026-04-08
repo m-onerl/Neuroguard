@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level = logging.INFO,
-    format = '%(asctime)s %(name)s = %(levelname)s - %(message)s'
+    format = '%(asctime)s %(name)s = %(levelname)s - %(message)s' 
 )
 
 attack_map = {
@@ -66,5 +66,6 @@ class DataPreprocesor:
 
         np.save(f'{processed_dir}/X_train.npy', x_array)
         np.save(f'{processed_dir}/y_train.npy', y_array)
+        np.save(f'{processed_dir}/columns.npy', np.array(x.columns.tolist()))
         logger.info(f"Files saved into {processed_dir} ")
 
