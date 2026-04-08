@@ -1,6 +1,8 @@
 import tkinter as tk
 from src.model.preprocess import DataPreprocesor
 from src.model.train import Training
+from src.model.predict import Predictor
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -29,6 +31,13 @@ class GUINeuroguard(tk.Tk):
             width = 25, 
             command = self.train_model
         ).pack(pady = 10)
+        
+        self.predict = tk.Button(
+            self, 
+            text = 'Predict', 
+            width = 25, 
+            command = self.model_predict
+        ).pack(pady = 10)
 
 
         
@@ -46,3 +55,11 @@ class GUINeuroguard(tk.Tk):
             trainer.train()
         except Exception as e:
             logging.error(f'Error{e}')
+            
+    def model_predict(self):
+        logging.info("Starting predicting ...")
+        try:
+            predictor = Predictor()
+            predictor.predict()
+        except Exception as e:
+            logging.error(f'Error: {e}')
